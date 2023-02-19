@@ -15,8 +15,13 @@ function read(username) {
   return knex("users").select("*").where({ username }).first();
 }
 
+function destroy(username) {
+  return knex("users").where({ username }).del();
+}
+
 module.exports = {
   create,
   list,
   read,
+  delete: destroy,
 };
