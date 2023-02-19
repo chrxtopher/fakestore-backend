@@ -1,20 +1,52 @@
 const users_service = require("./users.service");
 
+async function create(req, res, next) {
+  try {
+    const data = await users_service.create(req.body);
+    res.status(201).json({ data });
+  } catch (error) {
+    next({
+      status: 409,
+      message: error.detail,
+    });
+  }
+}
+
 async function list(req, res, next) {
-  const data = await users_service.list();
-  res.json({ data });
+  try {
+    const data = await users_service.list();
+    res.json({ data });
+  } catch (error) {
+    next({
+      status: 409,
+      message: error.detail,
+    });
+  }
 }
 
 async function read(req, res, next) {
   const data = res.locals.user;
-  res.json({ data });
+  try {
+    res.json({ data });
+  } catch (error) {
+    next({
+      status: 409,
+      message: error.detail,
+    });
+  }
 }
 
-async function create(req, res, next) {
-  users_service
-    .create(req.body)
-    .then((data) => res.status(201).json({ data }))
-    .catch(next);
+async function destroy(req, res, next) {
+  const { user } = res.locals;
+  try {
+    await users_service.delete(user.username);
+    res.sendStatus(204);
+  } catch (error) {
+    next({
+      status: 409,
+      message: error.detail,
+    });
+  }
 }
 
 // MIDDLEWARE BELOW //
@@ -36,10 +68,10 @@ function validateUsername(req, res, next) {
 }
 
 function validatePassword(req, res, next) {
-  if (req.body.password.length < 4 || req.body.password.length > 20) {
+  if (req.body.password.length < 8) {
     return next({
       status: 404,
-      message: "Password must be between 4 - 20 characters",
+      message: "Password must be atleast 8 characters",
     });
   } else if (req.body.password.indexOf(" ") >= 0) {
     return next({
@@ -84,4 +116,5 @@ module.exports = {
   create: [validateUsername, validatePassword, validateFullName, create],
   list,
   read: [userExists, read],
+  delete: [userExists, destroy],
 };
