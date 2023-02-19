@@ -43,6 +43,29 @@ async function read(req, res, next) {
   }
 }
 
+async function update(req, res, next) {
+  const updatedUser = {
+    ...req.body,
+    user_id: res.locals.user.user_id,
+  };
+  try {
+    const data = await users_service.update(updatedUser);
+    res.json({ data });
+  } catch (error) {
+    if (error.detail.includes("already exists")) {
+      next({
+        status: 409,
+        message: "That username is already taken",
+      });
+    } else {
+      next({
+        status: 409,
+        message: error.detail,
+      });
+    }
+  }
+}
+
 async function destroy(req, res, next) {
   const { user } = res.locals;
   try {
@@ -138,5 +161,12 @@ module.exports = {
   create: [validateUsername, validatePassword, validateFullName, create],
   list,
   read: [userExists, read],
+  update: [
+    userExists,
+    validateUsername,
+    validatePassword,
+    validateFullName,
+    update,
+  ],
   delete: [userExists, destroy],
 };
