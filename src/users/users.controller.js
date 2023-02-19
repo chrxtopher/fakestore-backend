@@ -5,10 +5,17 @@ async function create(req, res, next) {
     const data = await users_service.create(req.body);
     res.status(201).json({ data });
   } catch (error) {
-    next({
-      status: 409,
-      message: error.detail,
-    });
+    if (error.detail.includes("already exists")) {
+      next({
+        status: 409,
+        message: "That username is already taken",
+      });
+    } else {
+      next({
+        status: 409,
+        message: error.detail,
+      });
+    }
   }
 }
 
@@ -52,7 +59,12 @@ async function destroy(req, res, next) {
 // MIDDLEWARE BELOW //
 
 function validateUsername(req, res, next) {
-  if (req.body.username.length < 4 || req.body.username.length > 20) {
+  if (!req.body.username) {
+    return next({
+      status: 404,
+      message: "Please enter a username",
+    });
+  } else if (req.body.username.length < 4 || req.body.username.length > 20) {
     return next({
       status: 404,
       message: "Username must be between 4 - 20 characters",
@@ -68,10 +80,15 @@ function validateUsername(req, res, next) {
 }
 
 function validatePassword(req, res, next) {
-  if (req.body.password.length < 8) {
+  if (!req.body.password) {
     return next({
       status: 404,
-      message: "Password must be atleast 8 characters",
+      message: "Please enter a password",
+    });
+  } else if (req.body.password.length < 8) {
+    return next({
+      status: 404,
+      message: "Password must be at least 8 characters",
     });
   } else if (req.body.password.indexOf(" ") >= 0) {
     return next({
@@ -84,7 +101,12 @@ function validatePassword(req, res, next) {
 }
 
 function validateFullName(req, res, next) {
-  if (
+  if (!req.body.first_name || !req.body.last_name) {
+    return next({
+      status: 404,
+      message: "Please enter your first and last name",
+    });
+  } else if (
     req.body.first_name.indexOf(" ") >= 0 ||
     req.body.last_name.indexOf(" ") >= 0
   ) {
