@@ -15,6 +15,13 @@ function read(username) {
   return knex("users").select("*").where({ username }).first();
 }
 
+function readLoginCredentials(username) {
+  return knex("users")
+    .select(["username", "password"])
+    .where({ username })
+    .first();
+}
+
 function update(updatedUser) {
   return knex("users")
     .select("*")
@@ -30,6 +37,7 @@ module.exports = {
   create,
   list,
   read,
+  readLoginCredentials,
   update,
   delete: destroy,
 };

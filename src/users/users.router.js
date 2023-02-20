@@ -8,4 +8,6 @@ router
   .put(controller.update)
   .delete(controller.delete);
 
+router.route("/login/:username").get(controller.readLoginCredentials);
+
 module.exports = router;

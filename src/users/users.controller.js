@@ -21,8 +21,8 @@ async function create(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const data = await users_service.list();
-    res.json({ data });
+    const users = await users_service.list();
+    res.json({ users });
   } catch (error) {
     next({
       status: 409,
@@ -32,9 +32,24 @@ async function list(req, res, next) {
 }
 
 async function read(req, res, next) {
-  const data = res.locals.user;
+  const user = res.locals.user;
   try {
-    res.json({ data });
+    res.json({ user });
+  } catch (error) {
+    next({
+      status: 409,
+      message: error.detail,
+    });
+  }
+}
+
+async function readLoginCredentials(req, res, next) {
+  const credentials = {
+    username: res.locals.user.username,
+    password: res.locals.user.password,
+  };
+  try {
+    res.json({ credentials });
   } catch (error) {
     next({
       status: 409,
@@ -48,6 +63,7 @@ async function update(req, res, next) {
     ...req.body,
     user_id: res.locals.user.user_id,
   };
+
   try {
     const data = await users_service.update(updatedUser);
     res.json({ data });
@@ -161,6 +177,7 @@ module.exports = {
   create: [validateUsername, validatePassword, validateFullName, create],
   list,
   read: [userExists, read],
+  readLoginCredentials: [userExists, readLoginCredentials],
   update: [
     userExists,
     validateUsername,
