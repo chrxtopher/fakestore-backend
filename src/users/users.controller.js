@@ -140,10 +140,10 @@ function validatePassword(req, res, next) {
 }
 
 function validateFullName(req, res, next) {
-  if (!req.body.first_name || !req.body.last_name) {
+  if (!req.body.first_name) {
     return next({
       status: 404,
-      message: "Please enter your first and last name",
+      message: "Please enter your first name",
     });
   } else if (
     req.body.first_name.indexOf(" ") >= 0 ||
